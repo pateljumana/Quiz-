@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-800 text-white px-6 py-4">
+        <h1 class="text-2xl font-bold">Quiz Master</h1>
+        <p class="text-slate-300 text-sm">Test Your Knowledge</p>
+    </nav>
+
+    <!-- Quiz Container -->
+    <div class="max-w-2xl mx-auto px-4 py-10">
+
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+
+            <!-- Quiz Section -->
+            <div id="quiz">
+
+                <div class="flex justify-between mb-4 text-sm font-semibold text-slate-600">
+                    <p id="questionNumber">Question 1 of 5</p>
+                    <p id="score">Score: 0</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-slate-200 rounded-full h-2 mb-6">
+                    <div id="progress"
+                         class="bg-blue-600 h-2 rounded-full"
+                         style="width: 20%">
+                    </div>
+                </div>
+
+                <h2 id="question"
+                    class="text-xl font-bold text-slate-800 mb-6">
+                    Question will appear here
+                </h2>
+
+                <!-- Answer Options -->
+                <div id="options" class="space-y-3"></div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button id="previous"
+                        onclick="previousQuestion()"
+                        class="bg-slate-200 text-slate-700 px-5 py-2 rounded-lg hover:bg-slate-300 disabled:opacity-40">
+                        Previous
+                    </button>
+
+                    <button id="next"
+                        onclick="nextQuestion()"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                        Next
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Result Section -->
+            <div id="result" class="hidden text-center">
+
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">
+                    Quiz Completed!
+                </h2>
+
+                <p class="text-slate-600 mb-5">
+                    Here is your final result.
+                </p>
+
+                <div class="bg-blue-50 rounded-xl p-6 mb-5">
+                    <p class="text-slate-600">Your Score</p>
+
+                    <h3 id="finalScore"
+                        class="text-4xl font-bold text-blue-600 my-3">
+                        0/5
+                    </h3>
+
+                    <p id="percentage" class="text-slate-700"></p>
+                </div>
+
+                <h3 id="message"
+                    class="text-xl font-semibold text-slate-800 mb-6">
+                </h3>
+
+                <button onclick="restartQuiz()"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                    Try Again
+                </button>
+
+            </div>
+
+        </div>
+
+        <p class="text-center text-slate-500 text-sm mt-6">
+            Learn something new every day!
+        </p>
+
+    </div>
+
+    <script>
+        // Quiz Questions
+        let questions = [
+            {
+                question: "Which language is used to structure web pages?",
+                options: ["CSS", "HTML", "JavaScript", "Python"],
+                answer: 1
+            },
+            {
+                question: "Which data structure follows FIFO?",
+                options: ["Stack", "Queue", "Tree", "Graph"],
+                answer: 1
+            },
+            {
+                question: "Which keyword declares a variable in JavaScript?",
+                options: ["let", "print", "display", "write"],
+                answer: 0
+            },
+            {
+                question: "Which SQL command retrieves data?",
+                options: ["INSERT", "DELETE", "SELECT", "UPDATE"],
+                answer: 2
+            },
+            {
+                question: "Which data structure follows LIFO?",
+                options: ["Queue", "Stack", "Array", "Graph"],
+                answer: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [-1, -1, -1, -1, -1];
+
+        // Display Question
+        function showQuestion() {
+            let q = questions[currentQuestion];
+
+            document.getElementById("question").innerText = q.question;
+
+            document.getElementById("questionNumber").innerText =
+                "Question " + (currentQuestion + 1) + " of " + questions.length;
+
+            document.getElementById("score").innerText = "Score: " + score;
+
+            document.getElementById("progress").style.width =
+                ((currentQuestion + 1) / questions.length * 100) + "%";
+
+            let optionsHTML = "";
+
+            for (let i = 0; i < q.options.length; i++) {
+                let selected = "";
+
+                if (userAnswers[currentQuestion] === i) {
+                    selected = "bg-blue-100 border-blue-600";
+                } else {
+                    selected = "bg-white border-slate-300";
+                }
+
+                optionsHTML +=
+                    '<button onclick="selectAnswer(' + i + ')" ' +
+                    'class="w-full text-left border ' + selected +
+                    ' p-4 rounded-lg hover:bg-blue-50">' +
+                    String.fromCharCode(65 + i) + ". " + q.options[i] +
+                    '</button>';
+            }
+
+            document.getElementById("options").innerHTML = optionsHTML;
+
+            document.getElementById("previous").disabled =
+                currentQuestion === 0;
+
+            if (currentQuestion === questions.length - 1) {
+                document.getElementById("next").innerText = "Finish Quiz";
+            } else {
+                document.getElementById("next").innerText = "Next";
+            }
+        }
+
+        // Select Answer
+        function selectAnswer(index) {
+            userAnswers[currentQuestion] = index;
+            calculateScore();
+            showQuestion();
+        }
+
+        // Calculate Score
+        function calculateScore() {
+            score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].answer) {
+                    score++;
+                }
+            }
+        }
+
+        // Go to Next Question
+        function nextQuestion() {
+            if (userAnswers[currentQuestion] === -1) {
+                alert("Please select an answer first!");
+                return;
+            }
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // Go to Previous Question
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        // Display Final Result
+        function showResult() {
+            calculateScore();
+
+            document.getElementById("quiz").classList.add("hidden");
+            document.getElementById("result").classList.remove("hidden");
+
+            document.getElementById("finalScore").innerText =
+                score + "/" + questions.length;
+
+            let percentage = (score / questions.length) * 100;
+
+            document.getElementById("percentage").innerText =
+                "Percentage: " + percentage + "%";
+
+            if (percentage >= 80) {
+                document.getElementById("message").innerText =
+                    "Excellent Work!";
+            } else if (percentage >= 60) {
+                document.getElementById("message").innerText =
+                    "Good Job! Keep Learning.";
+            } else {
+                document.getElementById("message").innerText =
+                    "Keep Practicing. You Can Do It!";
+            }
+        }
+
+        // Restart Quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [-1, -1, -1, -1, -1];
+
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("quiz").classList.remove("hidden");
+
+            showQuestion();
+        }
+
+        // Start Quiz
+        showQuestion();
+    </script>
+
+</body>
+</html>
